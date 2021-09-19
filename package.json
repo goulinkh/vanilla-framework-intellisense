@@ -8,7 +8,7 @@
     "Linters"
   ],
   "preview": true,
-  "icon": "./logo.png",
+  "icon": "logo.png",
   "engines": {
     "vscode": "^1.43.0"
   },
