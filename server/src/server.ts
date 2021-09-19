@@ -157,9 +157,11 @@ connection.onCompletion((params: CompletionParams): CompletionItem[] => {
             ...classTree.children.flatMap(flattenClassTree),
           ];
       };
-      return (
-        vf.vfStyleModule?.allClassTrees?.flatMap(flattenClassTree) || []
-      ).map((c) => ({ label: c, kind: CompletionItemKind.Class }));
+      return [
+        ...new Set(
+          vf.vfStyleModule?.allClassTrees?.flatMap(flattenClassTree) || []
+        ),
+      ].map((c) => ({ label: c, kind: CompletionItemKind.Class }));
     }
   }
 

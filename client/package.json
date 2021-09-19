@@ -1,7 +1,6 @@
 {
   "name": "vanilla-framework-client",
   "author": "goulinkh",
-  "version": "0.0.1",
   "publisher": "goulinkh",
   "engines": {
     "vscode": "^1.52.0"

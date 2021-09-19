@@ -79,27 +79,27 @@ export class VanillaFramework {
     this.pathToScssFolder = await this.findPackageInWorkspace(workspacePath);
     if (!this.pathToScssFolder) {
       console.warn(
-        `[Vanilla framework loader] Couldn't find an installed package of Vanilla framework relative to the folder ${workspacePath}, using a package version of vf...`
+        `[Vanilla framework loader] Couldn't find an installed package of Vanilla framework relative to the folder ${workspacePath}, using a backup version of vanilla framework...`
       );
       console.log(`__dirname`, __dirname);
       this.pathToScssFolder = await this.findPackageInWorkspace(__dirname);
       if (!this.pathToScssFolder) {
         console.error(
-          `[Vanilla framework loader] Could find a package version of the vanilla framework`
+          `[Vanilla framework loader] Could find a backup version of vanilla framework`
         );
         return false;
       }
     }
     try {
       console.log(
-        "[Vanilla framework loader] started parsing the vanilla framework package..."
+        "[Vanilla framework loader] started parsing vanilla framework package..."
       );
       this.vfStyleModule = await this.loadScssFile(
         "vanilla",
         join(this.pathToScssFolder, "_vanilla.scss")
       );
       console.log(
-        "[Vanilla framework loader] finished parsing the vanilla framework package"
+        "[Vanilla framework loader] finished parsing vanilla framework package"
       );
     } catch (err) {
       console.error(
@@ -112,9 +112,9 @@ export class VanillaFramework {
   }
 
   /**
-   * Search for the vanilla framework package folder (relative to the opened project)
+   * Search for vanilla framework package folder (relative to the opened project)
    * @param workspacePath
-   * @returns if found, the full path to the vanilla framework scss folder
+   * @returns if found, the full path to vanilla framework scss folder
    */
   private async findPackageInWorkspace(
     workspacePath: string
