@@ -3,11 +3,15 @@
   "displayName": "Vanilla Framework",
   "description": "Intelligent Vanilla framework suggestions for VS Code",
   "version": "0.0.1",
+  "publisher": "goulinkh",
+  "categories": [
+    "Linters"
+  ],
+  "preview": true,
+  "icon": "./logo.png",
   "engines": {
     "vscode": "^1.43.0"
   },
-  "publisher": "goulinkh",
-  "categories": [],
   "keywords": [
     "vanilla",
     "vanilla-framework",
@@ -17,6 +21,9 @@
   "activationEvents": [
     "onLanguage:html"
   ],
+  "repository": {
+    "url": "github.com:goulinkh/vanilla-framework"
+  },
   "main": "./client/out/extension",
   "contributes": {
     "configuration": {
