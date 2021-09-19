@@ -1,0 +1,21 @@
+{
+  "name": "vanilla-framework-server",
+  "version": "1.0.0",
+  "author": "goulinkh",
+  "engines": {
+    "node": "*"
+  },
+  "dependencies": {
+    "findup-sync": "^4.0.0",
+    "node-html-parser": "^4.1.5",
+    "postcss": "^8.3.6",
+    "postcss-scss": "^4.0.0",
+    "vanilla-framework": "^2.36.0",
+    "vscode-languageserver": "^7.0.0",
+    "vscode-languageserver-textdocument": "^1.0.1"
+  },
+  "scripts": {},
+  "devDependencies": {
+    "@types/findup-sync": "^4.0.1"
+  }
+}

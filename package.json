@@ -1,0 +1,57 @@
+{
+  "name": "vanilla-framework",
+  "displayName": "Vanilla Framework",
+  "description": "Intelligent Vanilla framework suggestions for VS Code",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.43.0"
+  },
+  "publisher": "goulinkh",
+  "categories": [],
+  "keywords": [
+    "vanilla",
+    "vanilla-framework",
+    "intellisense",
+    "autocompletion"
+  ],
+  "activationEvents": [
+    "onLanguage:html"
+  ],
+  "main": "./client/out/extension",
+  "contributes": {
+    "configuration": {
+      "type": "object",
+      "title": "Example configuration",
+      "properties": {
+        "languageServerExample.trace.server": {
+          "scope": "window",
+          "type": "string",
+          "enum": [
+            "off",
+            "messages",
+            "verbose"
+          ],
+          "default": "off",
+          "description": "Traces the communication between VS Code and the language server."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -b",
+    "watch": "tsc -b -w",
+    "lint": "eslint ./client/src ./server/src --ext .ts,.tsx",
+    "postinstall": "cd client && yarn install && cd ../server && yarn install && cd ..",
+    "test": "sh ./scripts/e2e.sh"
+  },
+  "devDependencies": {
+    "@types/mocha": "^8.2.2",
+    "@types/node": "^12.12.0",
+    "@typescript-eslint/eslint-plugin": "^4.23.0",
+    "@typescript-eslint/parser": "^4.23.0",
+    "eslint": "^7.26.0",
+    "mocha": "^8.3.2",
+    "typescript": "^4.3.5"
+  }
+}
