@@ -24,6 +24,8 @@ export type StyleModule = {
    */
   allMixins?: Map<string, StyleBloc>;
   // all class tree roots, only the root node which can contains a nested children
+  allRootClassTrees?: ClassTree[];
+  // all class tress in the entire style module, used for easy read and search
   allClassTrees?: ClassTree[];
   allStyleModules?: Map<string, StyleModule>;
 };
@@ -55,8 +57,6 @@ export type ClassTree = {
   // TODO: not implemented yet
   description?: string;
 
-  isDirectChild?: boolean;
-
   parent?: ClassTree;
 };
 
@@ -74,14 +74,13 @@ export class VanillaFramework {
   public vfStyleModule: StyleModule | null = null;
   public isLoaded = false;
 
-  async loadPackage(workspacePath: string): Promise<boolean> {
-    console.log(workspacePath);
-    this.pathToScssFolder = await this.findPackageInWorkspace(workspacePath);
+  async loadPackage(workspacePath?: string): Promise<boolean> {
+    if (workspacePath)
+      this.pathToScssFolder = await this.findPackageInWorkspace(workspacePath);
     if (!this.pathToScssFolder) {
       console.warn(
         `[Vanilla framework loader] Couldn't find an installed package of Vanilla framework relative to the folder ${workspacePath}, using a backup version of vanilla framework...`
       );
-      console.log(`__dirname`, __dirname);
       this.pathToScssFolder = await this.findPackageInWorkspace(__dirname);
       if (!this.pathToScssFolder) {
         console.error(
@@ -103,8 +102,9 @@ export class VanillaFramework {
       );
     } catch (err) {
       console.error(
-        `[Vanilla framework loader] failed to parse the vf. ${err}`
+        `[Vanilla framework loader] failed to parse the vf.\n${err}`
       );
+      console.debug(err);
       return false;
     }
     this.isLoaded = true;
@@ -213,11 +213,29 @@ export class VanillaFramework {
     };
     getMixins(rootStyleModule);
     rootStyleModule.allMixins = mixins;
-    rootStyleModule.allClassTrees = Array.from(mixins.values() || []).flatMap(
-      (mixin) => mixin.classNamesTree
+    rootStyleModule.allRootClassTrees = Array.from(
+      mixins.values() || []
+    ).flatMap((mixin) => mixin.classNamesTree);
+    // flat all class tree to one level for easy search
+
+    rootStyleModule.allClassTrees = rootStyleModule.allRootClassTrees.flatMap(
+      (ct) => this.deepFlattenClassNames(ct)
     );
+
     rootStyleModule.allStyleModules = exploredModules;
     return rootStyleModule;
+  }
+
+  deepFlattenClassNames(classTree: ClassTree, ignoreRoot = false): ClassTree[] {
+    if (ignoreRoot)
+      return [
+        ...classTree.children.flatMap((ct) => this.deepFlattenClassNames(ct)),
+      ];
+    else
+      return [
+        classTree,
+        ...classTree.children.flatMap((ct) => this.deepFlattenClassNames(ct)),
+      ];
   }
 
   private async loadMixin(node: AtRule): Promise<StyleBloc> {

@@ -39,11 +39,9 @@ connection.onInitialize(async (params: InitializeParams) => {
   workspacePath = params.workspaceFolders?.map((s) =>
     join(s.uri.replace(/^file:\/\//, ""))
   )[0];
-  console.log(`workspacePath`, workspacePath);
-  if (workspacePath) {
-    // Search for the package in the workspace
-    await vf.loadPackage(workspacePath);
-  }
+
+  // Search for the package in the workspace
+  await vf.loadPackage(workspacePath);
 
   // Does the client support the `workspace/configuration` request?
   // If not, we fall back using global settings.
@@ -126,8 +124,6 @@ function findHtmlNodeFromRawText(
 
 // This handler provides the initial list of the completion items.
 connection.onCompletion((params: CompletionParams): CompletionItem[] => {
-  // TODO: maybe use a backup of vanilla-framework if the package is not found
-  if (!workspacePath) return [];
   const content = documents.get(params.textDocument.uri);
   if (content?.languageId === "html") {
     const parsedContent = parseHtml(content.getText());
@@ -137,31 +133,16 @@ connection.onCompletion((params: CompletionParams): CompletionItem[] => {
       parsedContent
     );
     if (element && vf.isLoaded) {
-      /* 			return [...element?.classList.values()].map(
-				(className: string) =>
-					(console.log(className) as any) || {
-						label: className,
-						kind: CompletionItemKind.Class,
-					}
-			);
- */
-      // TODO: urgent, get more context aware class names instead of all the classes
-
-      // temporary function, get rid of as soon as possible
-      const flattenClassTree = (classTree: ClassTree): string[] => {
-        if (!classTree.children.length)
-          return classTree.classes.map((c) => c.name);
-        else
-          return [
-            ...classTree.classes.map((c) => c.name),
-            ...classTree.children.flatMap(flattenClassTree),
-          ];
-      };
+      const items = html.getAvailableClasses(element);
       return [
-        ...new Set(
-          vf.vfStyleModule?.allClassTrees?.flatMap(flattenClassTree) || []
-        ),
-      ].map((c) => ({ label: c, kind: CompletionItemKind.Class }));
+        ...new Set([
+          ...items.highScoreItems.map((i) => i.name),
+          ...items.normalItems.map((i) => i.name),
+          ...(vf.vfStyleModule?.allRootClassTrees?.flatMap((tree) =>
+            tree.classes.map((c) => c.name).filter((c) => !c.match(/^.+__.+$/))
+          ) || []),
+        ]),
+      ].map((i) => ({ label: i, kind: CompletionItemKind.Enum }));
     }
   }
 
@@ -171,13 +152,6 @@ connection.onCompletion((params: CompletionParams): CompletionItem[] => {
 // This handler resolves additional information for the item selected in
 // the completion list.
 connection.onCompletionResolve((item: CompletionItem): CompletionItem => {
-  if (item.data === 1) {
-    item.detail = "TypeScript details";
-    item.documentation = "TypeScript documentation";
-  } else if (item.data === 2) {
-    item.detail = "JavaScript details";
-    item.documentation = "JavaScript documentation";
-  }
   return item;
 });
 
