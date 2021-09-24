@@ -116,7 +116,6 @@ export class HTMLAutoCompletion {
       context.position.character - 500,
       context.position.character + 1
     );
-    console.log(`str`, str);
     return (
       !!str.match(
         /(?:\s|:|\()(?:class(?:Name)?|\[ngClass\])\s*=\s*['"`][^'"`]*$/i

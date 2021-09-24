@@ -2,7 +2,7 @@
  * Copyright (c) Microsoft Corporation. All rights reserved.
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
-import { HTMLElement, parse as parseHtml } from "node-html-parser";
+import { parse as parseHtml } from "node-html-parser";
 import { join } from "path";
 import { TextDocument } from "vscode-languageserver-textdocument";
 import {
@@ -18,8 +18,8 @@ import {
   TextDocuments,
   TextDocumentSyncKind,
 } from "vscode-languageserver/node";
-import { ClassTree, VanillaFramework } from "./vanilla-framework";
 import { HTMLAutoCompletion } from "./html";
+import { VanillaFramework } from "./vanilla-framework";
 // Create a connection for the server, using Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
 const connection = createConnection(ProposedFeatures.all);
@@ -99,15 +99,26 @@ connection.onCompletion((params: CompletionParams): CompletionItem[] => {
     );
     if (context && vf.isLoaded && html.isInsideClassValueField(context)) {
       const items = html.getAvailableClasses(context.element);
-      return [
-        ...new Set([
-          ...items.highScoreItems.map((i) => i.name),
-          ...items.normalItems.map((i) => i.name),
-          ...(vf.vfStyleModule?.allRootClassTrees?.flatMap((tree) =>
-            tree.classes.map((c) => c.name).filter((c) => !c.match(/^.+__.+$/))
-          ) || []),
-        ]),
-      ].map((i) => ({ label: i, kind: CompletionItemKind.EnumMember }));
+      return (
+        [
+          ...new Set([
+            ...items.highScoreItems.map((i) => i.name),
+            ...items.normalItems.map((i) => i.name),
+            ...(vf.vfStyleModule?.allRootClassTrees?.flatMap((tree) =>
+              tree.classes
+                .map((c) => c.name)
+                .filter((c) => !c.match(/^.+__.+$/))
+            ) || []),
+          ]),
+        ]
+          // example: p-link--external::after
+          .filter((c) => !c.match(/:/))
+          // example: l-fluid-breakout#{$suffix}
+          .filter((c) => !c.match(/#{.*}/))
+          // example: u-fixed-width &
+          .filter((c) => !c.match(/&/))
+          .map((i) => ({ label: i, kind: CompletionItemKind.EnumMember }))
+      );
     }
   }
 

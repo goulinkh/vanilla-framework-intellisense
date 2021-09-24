@@ -274,13 +274,34 @@ export class VanillaFramework {
     const children: Rule[] = node.nodes.filter(
       (node): node is Rule => node.type === "rule"
     );
-    if (!children) return classesTree;
-    else {
-      classesTree.children = children
-        .map((childNode) => this.parseClassesTree(childNode, classesTree))
-        .filter((e): e is ClassTree => e !== null);
-      return classesTree;
-    }
+
+    classesTree.classes.push(
+      ...children.flatMap((childNode) =>
+        this.getParentExtendedClasses(childNode.selectors, classesTree)
+      )
+    );
+
+    classesTree.children = children
+      .map((childNode) => this.parseClassesTree(childNode, classesTree))
+      .filter((e): e is ClassTree => e !== null);
+    return classesTree;
+  }
+
+  private getParentExtendedClasses(
+    selectors: string[],
+    parent: ClassTree
+  ): ClassName[] {
+    return selectors
+      .flatMap((selector) => {
+        // example: "&--light"
+        if (selector.match(/^&[^\\.]+/)) {
+          return parent.classes.flatMap((c) => ({
+            name: c.name + selector.replace(/^&/, ""),
+            isDirectChild: c.isDirectChild,
+          }));
+        }
+      })
+      .filter((e): e is ClassName => !!e);
   }
 
   private getSubClasses(selectors: string[]): ClassName[] {
