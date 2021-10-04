@@ -20,7 +20,8 @@
     "autocompletion"
   ],
   "activationEvents": [
-    "onLanguage:html"
+    "onLanguage:html",
+    "onLanguage:scss"
   ],
   "repository": {
     "type": "git",

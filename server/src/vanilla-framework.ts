@@ -223,9 +223,6 @@ export class VanillaFramework {
         styleModule.variables.forEach((variable) => {
           if (variables.filter((v) => v.name === variable.name).length === 0) {
             variables.push(variable);
-            console.log("ADD:", variable.name);
-          } else {
-            console.log("SKIP:", variable.name);
           }
         });
         exploredModules.set(styleModule.name, styleModule);
