@@ -17,6 +17,8 @@ export type StyleModule = {
   filename: string;
   // @mixin list
   mixins: StyleBloc[];
+  // list of global variables defined in this module
+  variables: Variable[];
 
   /* these attributes are used for quick read and filter.
    * Read only and to recalculate after each change to the
@@ -28,6 +30,8 @@ export type StyleModule = {
   // all class tress in the entire style module, used for easy read and search
   allClassTrees?: ClassTree[];
   allStyleModules?: Map<string, StyleModule>;
+  // all global variables
+  allVariables?: Variable[];
 };
 
 export type StyleBloc = {
@@ -97,6 +101,7 @@ export class VanillaFramework {
         "vanilla",
         join(this.pathToScssFolder, "_vanilla.scss")
       );
+      this.linkDependencies(this.vfStyleModule);
       console.log(
         "[Vanilla framework loader] finished parsing vanilla framework package"
       );
@@ -145,10 +150,17 @@ export class VanillaFramework {
       filename: path,
       mixins: [],
       includedModules: [],
+      variables: [],
     };
 
     for (let i = 0; i < root.nodes.length; i++) {
       const node = root.nodes[i];
+
+      if (node.type === "decl" && node.prop[0] === "$") {
+        result.variables.push({
+          name: node.prop,
+        });
+      }
 
       if (node.type === "atrule" && node.name === "import") {
         const importNamespace = node.params.replace(/(^('|")|('|")$)/g, "");
@@ -181,8 +193,6 @@ export class VanillaFramework {
       }
     }
 
-    this.linkDependencies(result);
-
     return result;
   }
 
@@ -201,18 +211,31 @@ export class VanillaFramework {
 
   private loadAllMixinsAndModules(rootStyleModule: StyleModule): StyleModule {
     const mixins: Map<string, StyleBloc> = new Map();
+    const variables: Variable[] = [];
+
     // Stop if already added this module (avoid circular dependency iterations)
     const exploredModules: Map<string, StyleModule> = new Map();
-    const getMixins = (styleModule: StyleModule) => {
+
+    const readModuleData = (styleModule: StyleModule) => {
       if (exploredModules.get(styleModule.name)) return;
       else {
         styleModule.mixins.forEach((mixin) => mixins.set(mixin.name, mixin));
+        styleModule.variables.forEach((variable) => {
+          if (variables.filter((v) => v.name === variable.name).length === 0) {
+            variables.push(variable);
+            console.log("ADD:", variable.name);
+          } else {
+            console.log("SKIP:", variable.name);
+          }
+        });
         exploredModules.set(styleModule.name, styleModule);
-        styleModule.importedModules.forEach(getMixins);
+        styleModule.importedModules.forEach(readModuleData);
       }
     };
-    getMixins(rootStyleModule);
+
+    readModuleData(rootStyleModule);
     rootStyleModule.allMixins = mixins;
+    rootStyleModule.allVariables = variables;
     rootStyleModule.allRootClassTrees = Array.from(
       mixins.values() || []
     ).flatMap((mixin) => mixin.classNamesTree);
