@@ -6,6 +6,8 @@
     "vscode": "^1.52.0"
   },
   "dependencies": {
+    "axios": "^0.22.0",
+    "node-html-parser": "^4.1.5",
     "vscode-languageclient": "^7.0.0"
   },
   "devDependencies": {
