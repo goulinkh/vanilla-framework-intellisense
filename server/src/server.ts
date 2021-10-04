@@ -121,6 +121,29 @@ connection.onCompletion((params: CompletionParams): CompletionItem[] => {
           .map((i) => ({ label: i, kind: CompletionItemKind.EnumMember }))
       );
     }
+  } else if (
+    content?.languageId === "javascriptreact" ||
+    content?.languageId === "typescriptreact"
+  ) {
+    return (
+      [
+        ...new Set([
+          ...(vf.vfStyleModule?.allRootClassTrees?.flatMap((tree) =>
+            tree.classes.map((c) => c.name).filter((c) => !c.match(/^.+__.+$/))
+          ) || []),
+        ]),
+      ]
+        // example: p-link--external::after
+        .filter((c) => !c.match(/:/))
+        // example: l-fluid-breakout#{$suffix}
+        .filter((c) => !c.match(/#{.*}/))
+        // example: u-fixed-width &
+        .filter((c) => !c.match(/&/))
+        .map((i) => ({
+          label: i,
+          kind: CompletionItemKind.EnumMember,
+        }))
+    );
   }
   if (content?.languageId === "scss") {
     if (vf.vfStyleModule?.allVariables) {
