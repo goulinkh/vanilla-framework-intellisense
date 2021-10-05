@@ -126,25 +126,31 @@ connection.onCompletion((params: CompletionParams): CompletionItem[] => {
     content?.languageId === "javascriptreact" ||
     content?.languageId === "typescriptreact"
   ) {
-    return (
-      [
-        ...new Set([
-          ...(vf.vfStyleModule?.allRootClassTrees?.flatMap((tree) =>
-            tree.classes.map((c) => c.name).filter((c) => !c.match(/^.+__.+$/))
-          ) || []),
-        ]),
-      ]
-        // example: p-link--external::after
-        .filter((c) => !c.match(/:/))
-        // example: l-fluid-breakout#{$suffix}
-        .filter((c) => !c.match(/#{.*}/))
-        // example: u-fixed-width &
-        .filter((c) => !c.match(/&/))
-        .map((i) => ({
-          label: i,
-          kind: CompletionItemKind.EnumMember,
-        }))
-    );
+    const line = content.getText().split("\n")[params.position.line];
+    const regex = /class(Name)?={?("[a-zA-Z_-]*"(\s)*(\+)?(\s)*)+}?/i
+    const matchInfo = regex.exec(line);
+
+    if (matchInfo) {
+      const matchStartInd = matchInfo.index;
+      const matchedStr = matchInfo[0];
+      if (matchStartInd <=  params.position.character && params.position.character <= matchStartInd + matchedStr.length) { 
+        const className = matchedStr.split("=")[1].replace(/\"|'|{|}/g,'');
+
+        return (
+          [
+            ...new Set([
+              ...(vf.vfStyleModule?.allRootClassTrees?.flatMap((tree) =>
+                tree.classes.map((c) => c.name).filter((c) => c.match(new RegExp(`.*${className}.*`)))                
+              ) || []),
+            ]),
+          ]
+            .filter((c) => !c.match(/:/))
+            .filter((c) => !c.match(/#{.*}/))
+            .filter((c) => !c.match(/&/))
+            .map((i) => ({ label: i, kind: CompletionItemKind.EnumMember }))
+        );
+      }
+    }
   }
   if (content?.languageId === "scss") {
     if (vf.vfStyleModule?.allVariables) {
