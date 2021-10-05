@@ -14,6 +14,7 @@ import {
   InitializedParams,
   InitializeParams,
   InitializeResult,
+  MarkupKind,
   ProposedFeatures,
   TextDocuments,
   TextDocumentSyncKind,
@@ -156,7 +157,11 @@ connection.onCompletion((params: CompletionParams): CompletionItem[] => {
                 variable.name.indexOf("color") >= 0
                   ? CompletionItemKind.Color
                   : CompletionItemKind.Variable,
-              detail: `Vanilla ${variable.name} variable`,
+              detail: variable.value,
+              documentation: {
+                kind: MarkupKind.Markdown,
+                value: `Vanilla \`${variable.name}\` variable with default value of \`${variable.value}\``,
+              },
             };
           }
         );

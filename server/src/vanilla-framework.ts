@@ -1,10 +1,11 @@
 import * as fs from "fs";
 import { promises as fsPromises } from "fs";
 import { basename, dirname, join } from "path";
-import { AtRule, ChildNode, Root, Rule } from "postcss";
+import { AtRule, ChildNode, Declaration, Root, Rule } from "postcss";
 import { parse } from "postcss-scss";
 import { promisify } from "util";
 import findup = require("findup-sync");
+import { Node } from "node-html-parser";
 const exists = promisify(fs.exists);
 
 export type StyleModule = {
@@ -71,6 +72,7 @@ export type Variable = {
   // comment before a variable
   // TODO: not implemented yet
   description?: string;
+  value?: string;
 };
 
 export class VanillaFramework {
@@ -159,6 +161,7 @@ export class VanillaFramework {
       if (node.type === "decl" && node.prop[0] === "$") {
         result.variables.push({
           name: node.prop,
+          value: node.value.replace(" !default", ""),
         });
       }
 
