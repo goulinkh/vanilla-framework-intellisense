@@ -101,7 +101,7 @@ connection.onCompletion((params: CompletionParams): CompletionItem[] => {
     );
     if (context && vf.isLoaded && html.isInsideClassValueField(context)) {
       const items = html.getAvailableClasses(context.element);
-      return (
+      return html.filterResults(
         [
           ...new Set([
             ...items.highScoreItems.map((i) => i.name),
@@ -113,40 +113,32 @@ connection.onCompletion((params: CompletionParams): CompletionItem[] => {
             ) || []),
           ]),
         ]
-          // example: p-link--external::after
-          .filter((c) => !c.match(/:/))
-          // example: l-fluid-breakout#{$suffix}
-          .filter((c) => !c.match(/#{.*}/))
-          // example: u-fixed-width &
-          .filter((c) => !c.match(/&/))
-          .map((i) => ({ label: i, kind: CompletionItemKind.EnumMember }))
       );
     }
   } else if (
     content?.languageId === "javascriptreact" ||
     content?.languageId === "typescriptreact"
   ) {
-    return (
-      [
+    const characterPosition =
+      content.getText().split("\n").slice(0, params.position.line).join("\n")
+        .length + params.position.character;
+    const str = content
+      .getText()
+      .slice(characterPosition - 500, characterPosition + 1);
+    if (
+      str.match(
+        /(?:\s|:|\()(?:class(?:Name)?|\[ngClass\])\s*=\s*['"`][^'"`]*$/i
+      ) ||
+      str.match(/className\s*=\s*{[^}]*$/i)
+    )
+      return html.filterResults([
         ...new Set([
-          ...(vf.vfStyleModule?.allRootClassTrees?.flatMap((tree) =>
-            tree.classes.map((c) => c.name).filter((c) => !c.match(/^.+__.+$/))
+          ...(vf.vfStyleModule?.allClassTrees?.flatMap((tree) =>
+            tree.classes.map((c) => c.name)
           ) || []),
         ]),
-      ]
-        // example: p-link--external::after
-        .filter((c) => !c.match(/:/))
-        // example: l-fluid-breakout#{$suffix}
-        .filter((c) => !c.match(/#{.*}/))
-        // example: u-fixed-width &
-        .filter((c) => !c.match(/&/))
-        .map((i) => ({
-          label: i,
-          kind: CompletionItemKind.EnumMember,
-        }))
-    );
-  }
-  if (content?.languageId === "scss") {
+      ]);
+  } else if (content?.languageId === "scss") {
     if (vf.vfStyleModule?.allVariables) {
       const items: CompletionItem[] =
         vf.vfStyleModule.allVariables.map<CompletionItem>(
