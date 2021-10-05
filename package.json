@@ -45,7 +45,14 @@
           "description": "Traces the communication between VS Code and the language server."
         }
       }
-    }
+    },
+    "commands": [
+      {
+        "command": "vanilla-framework-intellisense.vf-snippets",
+        "title": "insert a snippet",
+        "category": "Vanilla Framework"
+      }
+    ]
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",

@@ -4,7 +4,7 @@
  * ------------------------------------------------------------------------------------------ */
 
 import * as path from "path";
-import { workspace, ExtensionContext } from "vscode";
+import { workspace, ExtensionContext, commands, window } from "vscode";
 
 import {
   LanguageClient,
@@ -58,6 +58,20 @@ export function activate(context: ExtensionContext) {
 
   // Start the client. This will also launch the server
   client.start();
+
+  registerSnippetsCommand([
+    {
+      name: "Card / Default",
+      html: `<div class="p-card">
+  <h3>We'd love to have you join us as a partner.</h3>
+  <p class="p-card__content">If you are an independent software vendor or bundle author, it's easy to apply. You can find out more below.</p>
+</div>`,
+    },
+    {
+      name: "Button",
+      html: `<button>Button</button>`,
+    },
+  ]);
 }
 
 export function deactivate(): Thenable<void> | undefined {
@@ -65,4 +79,32 @@ export function deactivate(): Thenable<void> | undefined {
     return undefined;
   }
   return client.stop();
+}
+
+type Snippet = {
+  name: string;
+  html: string;
+};
+function registerSnippetsCommand(snippets: Snippet[]) {
+  const snippetsCommand = "vanilla-framework-intellisense.vf-snippets";
+
+  const onInsertSnippet = (snippetName: string) => {
+    const snippet = snippets.find((s) => s.name === snippetName);
+    const editor = window.activeTextEditor;
+    if (!(editor && snippet)) return;
+    editor.edit((editBuilder) => {
+      const position = editor.selection.active;
+      editBuilder.insert(position, snippet.html);
+    });
+  };
+  const commandHandler = (_tite: string) => {
+    window
+      .showQuickPick(
+        snippets.map(({ name }) => name),
+        { title: "Select a code example:" }
+      )
+      .then(onInsertSnippet);
+  };
+
+  commands.registerCommand(snippetsCommand, commandHandler);
 }
