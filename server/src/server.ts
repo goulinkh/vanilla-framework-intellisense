@@ -101,7 +101,7 @@ connection.onCompletion((params: CompletionParams): CompletionItem[] => {
     );
     if (context && vf.isLoaded && html.isInsideClassValueField(context)) {
       const items = html.getAvailableClasses(context.element);
-      return (
+      return html.filterResults(
         [
           ...new Set([
             ...items.highScoreItems.map((i) => i.name),
@@ -113,13 +113,6 @@ connection.onCompletion((params: CompletionParams): CompletionItem[] => {
             ) || []),
           ]),
         ]
-          // example: p-link--external::after
-          .filter((c) => !c.match(/:/))
-          // example: l-fluid-breakout#{$suffix}
-          .filter((c) => !c.match(/#{.*}/))
-          // example: u-fixed-width &
-          .filter((c) => !c.match(/&/))
-          .map((i) => ({ label: i, kind: CompletionItemKind.EnumMember }))
       );
     }
   } else if (
@@ -136,23 +129,20 @@ connection.onCompletion((params: CompletionParams): CompletionItem[] => {
       if (matchStartInd <=  params.position.character && params.position.character <= matchStartInd + matchedStr.length) { 
         const className = matchedStr.split("=")[1].replace(/\"|'|{|}/g,'');
 
-        return (
+        return html.filterResults(
           [
             ...new Set([
               ...(vf.vfStyleModule?.allRootClassTrees?.flatMap((tree) =>
-                tree.classes.map((c) => c.name).filter((c) => c.match(new RegExp(`.*${className}.*`)))                
+                tree.classes
+                  .map((c) => c.name)
+                  .filter((c) => c.match(new RegExp(`.*${className}.*`)))                
               ) || []),
             ]),
           ]
-            .filter((c) => !c.match(/:/))
-            .filter((c) => !c.match(/#{.*}/))
-            .filter((c) => !c.match(/&/))
-            .map((i) => ({ label: i, kind: CompletionItemKind.EnumMember }))
         );
       }
     }
-  }
-  if (content?.languageId === "scss") {
+  } else if (content?.languageId === "scss") {
     if (vf.vfStyleModule?.allVariables) {
       const items: CompletionItem[] =
         vf.vfStyleModule.allVariables.map<CompletionItem>(

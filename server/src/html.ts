@@ -1,4 +1,5 @@
 import { HTMLElement } from "node-html-parser";
+import { CompletionItem, CompletionItemKind } from 'vscode-languageserver-types';
 import { ClassName, ClassTree, VanillaFramework } from "./vanilla-framework";
 
 export type CompletionItems = {
@@ -121,5 +122,16 @@ export class HTMLAutoCompletion {
         /(?:\s|:|\()(?:class(?:Name)?|\[ngClass\])\s*=\s*['"`][^'"`]*$/i
       ) || !!str.match(/className\s*=\s*{[^}]*$/i)
     );
+  }
+
+  filterResults(elements: string[]): CompletionItem[] {
+    return elements
+      // example: p-link--external::after
+      .filter((c) => !c.match(/:/))
+      // example: l-fluid-breakout#{$suffix}
+      .filter((c) => !c.match(/#{.*}/))
+      // example: u-fixed-width &
+      .filter((c) => !c.match(/&/))
+      .map((i) => ({ label: i, kind: CompletionItemKind.EnumMember }))
   }
 }
