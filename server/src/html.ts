@@ -1,5 +1,9 @@
 import { HTMLElement } from "node-html-parser";
-import { CompletionItem, CompletionItemKind } from 'vscode-languageserver-types';
+import {
+  CompletionItem,
+  CompletionItemKind,
+  MarkupKind,
+} from "vscode-languageserver-types";
 import { ClassName, ClassTree, VanillaFramework } from "./vanilla-framework";
 
 export type CompletionItems = {
@@ -125,13 +129,44 @@ export class HTMLAutoCompletion {
   }
 
   filterResults(elements: string[]): CompletionItem[] {
-    return elements
-      // example: p-link--external::after
-      .filter((c) => !c.match(/:/))
-      // example: l-fluid-breakout#{$suffix}
-      .filter((c) => !c.match(/#{.*}/))
-      // example: u-fixed-width &
-      .filter((c) => !c.match(/&/))
-      .map((i) => ({ label: i, kind: CompletionItemKind.EnumMember }))
+    return (
+      elements
+        // example: p-link--external::after
+        .filter((c) => !c.match(/:/))
+        // example: l-fluid-breakout#{$suffix}
+        .filter((c) => !c.match(/#{.*}/))
+        // example: u-fixed-width &
+        .filter((c) => !c.match(/&/))
+        .map(
+          (i) =>
+            ({
+              label: i,
+              kind: CompletionItemKind.EnumMember,
+              documentation: {
+                kind: MarkupKind.Markdown,
+                value: getComponentDocsLink(i),
+              },
+            } as CompletionItem)
+        )
+    );
   }
 }
+
+const getComponentDocsLink = (className: string): string => {
+  if (!className) return "";
+
+  const category =
+    className.split("-")[0] === "p"
+      ? "patterns"
+      : className.split("-")[0] === "l"
+      ? "layouts"
+      : "utilities";
+  const name = className
+    .slice(className.indexOf("-") + 1)
+    .split("__")[0]
+    .split("--")[0];
+
+  const linkBase = `vanillaframework.io/docs/${category}/${name}`;
+
+  return `[${linkBase}](https://${linkBase})`;
+};
