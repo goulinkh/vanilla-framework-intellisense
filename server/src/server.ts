@@ -119,23 +119,25 @@ connection.onCompletion((params: CompletionParams): CompletionItem[] => {
     content?.languageId === "javascriptreact" ||
     content?.languageId === "typescriptreact"
   ) {
-    const line = content.getText().split("\n")[params.position.line];
-    const startIndex = line.lastIndexOf("\"", params.position.character - 1)
-    const endIndex = params.position.character;
-    const className = line.slice(startIndex + 1, endIndex)
-
-    return html.filterResults(
-      [
+    const characterPosition =
+      content.getText().split("\n").slice(0, params.position.line).join("\n")
+        .length + params.position.character;
+    const str = content
+      .getText()
+      .slice(characterPosition - 500, characterPosition + 1);
+    if (
+      str.match(
+        /(?:\s|:|\()(?:class(?:Name)?|\[ngClass\])\s*=\s*['"`][^'"`]*$/i
+      ) ||
+      str.match(/className\s*=\s*{[^}]*$/i)
+    )
+      return html.filterResults([
         ...new Set([
-          ...(vf.vfStyleModule?.allRootClassTrees?.flatMap((tree) =>
-            tree.classes
-              .map((c) => c.name)
-              .filter((c) => c.match(new RegExp(`.*${className}.*`)))  
-              .filter((c) => !c.match(/^.+__.+$/))              
+          ...(vf.vfStyleModule?.allClassTrees?.flatMap((tree) =>
+            tree.classes.map((c) => c.name)
           ) || []),
         ]),
-      ]
-    );
+      ]);
   } else if (content?.languageId === "scss") {
     if (vf.vfStyleModule?.allVariables) {
       const items: CompletionItem[] =
