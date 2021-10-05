@@ -52,8 +52,7 @@
       {
         "command": "vanilla-framework-intellisense.vf-snippets",
         "title": "insert a snippet",
-        "category": "Vanilla Framework",
-        "enablement": "editorFocus && resourceLangId == html"
+        "category": "Vanilla Framework"
       }
     ]
   },

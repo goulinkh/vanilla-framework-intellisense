@@ -16,7 +16,10 @@ export const fetchDocExamples: () => Promise<Snippet[]> = async () => {
     const snippets = await Promise.all(
       [
         ...examplesDoc.querySelectorAll(
-          "#main-content > div.row > div:nth-child(1) > nav > ul > li > a"
+          "#main-content > div.row > div > nav[aria-label*='base elements'] > ul > li > a"
+        ),
+        ...examplesDoc.querySelectorAll(
+          "#main-content > div.row > div > nav[aria-label*='components'] > ul > li > a"
         ),
       ].map(async (e) => {
         const title = e.rawText;
@@ -26,6 +29,9 @@ export const fetchDocExamples: () => Promise<Snippet[]> = async () => {
 
         const exampleDoc = parse(res.data);
         const body = exampleDoc.querySelector("body");
+        if(!body){
+          return;
+        }
         const bodyChildNodes: HTMLElement[] = body.childNodes
           .filter((e): e is HTMLElement => e.nodeType === 1)
           .filter((e) => e.rawTagName != "script");
@@ -34,7 +40,7 @@ export const fetchDocExamples: () => Promise<Snippet[]> = async () => {
         return { name: title, html: snippetString.join("\n") };
       })
     );
-    return snippets;
+    return snippets.filter(e => e);
   } catch (error) {
     console.log(error);
   }

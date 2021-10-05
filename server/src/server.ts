@@ -88,25 +88,6 @@ connection.onInitialized((params: InitializedParams) => {
   }
 });
 
-const getComponentDocsLink = (className: string): string => {
-  if (!className) return "";
-
-  const category =
-    className.split("-")[0] === "p"
-      ? "patterns"
-      : className.split("-")[0] === "l"
-      ? "layouts"
-      : "utilities";
-  const name = className
-    .slice(className.indexOf("-") + 1)
-    .split("__")[0]
-    .split("--")[0];
-
-  const linkBase = `vanillaframework.io/docs/${category}/${name}`;
-
-  return `[${linkBase}](https://${linkBase})`;
-};
-
 // This handler provides the initial list of the completion items.
 connection.onCompletion((params: CompletionParams): CompletionItem[] => {
   const content = documents.get(params.textDocument.uri);
@@ -120,59 +101,40 @@ connection.onCompletion((params: CompletionParams): CompletionItem[] => {
     );
     if (context && vf.isLoaded && html.isInsideClassValueField(context)) {
       const items = html.getAvailableClasses(context.element);
-      return (
-        [
-          ...new Set([
-            ...items.highScoreItems.map((i) => i.name),
-            ...items.normalItems.map((i) => i.name),
-            ...(vf.vfStyleModule?.allRootClassTrees?.flatMap((tree) =>
-              tree.classes
-                .map((c) => c.name)
-                .filter((c) => !c.match(/^.+__.+$/))
-            ) || []),
-          ]),
-        ]
-          // example: p-link--external::after
-          .filter((c) => !c.match(/:/))
-          // example: l-fluid-breakout#{$suffix}
-          .filter((c) => !c.match(/#{.*}/))
-          // example: u-fixed-width &
-          .filter((c) => !c.match(/&/))
-          .map((i) => ({
-            label: i,
-            kind: CompletionItemKind.EnumMember,
-            documentation: {
-              kind: MarkupKind.Markdown,
-              value: getComponentDocsLink(i),
-            },
-          }))
-      );
+      return html.filterResults([
+        ...new Set([
+          ...items.highScoreItems.map((i) => i.name),
+          ...items.normalItems.map((i) => i.name),
+          ...(vf.vfStyleModule?.allRootClassTrees?.flatMap((tree) =>
+            tree.classes.map((c) => c.name).filter((c) => !c.match(/^.+__.+$/))
+          ) || []),
+        ]),
+      ]);
     }
   } else if (
     content?.languageId === "javascriptreact" ||
     content?.languageId === "typescriptreact"
   ) {
-    return (
-      [
+    const characterPosition =
+      content.getText().split("\n").slice(0, params.position.line).join("\n")
+        .length + params.position.character;
+    const str = content
+      .getText()
+      .slice(characterPosition - 500, characterPosition + 1);
+    if (
+      str.match(
+        /(?:\s|:|\()(?:class(?:Name)?|\[ngClass\])\s*=\s*['"`][^'"`]*$/i
+      ) ||
+      str.match(/className\s*=\s*{[^}]*$/i)
+    )
+      return html.filterResults([
         ...new Set([
-          ...(vf.vfStyleModule?.allRootClassTrees?.flatMap((tree) =>
-            tree.classes.map((c) => c.name).filter((c) => !c.match(/^.+__.+$/))
+          ...(vf.vfStyleModule?.allClassTrees?.flatMap((tree) =>
+            tree.classes.map((c) => c.name)
           ) || []),
         ]),
-      ]
-        // example: p-link--external::after
-        .filter((c) => !c.match(/:/))
-        // example: l-fluid-breakout#{$suffix}
-        .filter((c) => !c.match(/#{.*}/))
-        // example: u-fixed-width &
-        .filter((c) => !c.match(/&/))
-        .map((i) => ({
-          label: i,
-          kind: CompletionItemKind.EnumMember,
-        }))
-    );
-  }
-  if (content?.languageId === "scss") {
+      ]);
+  } else if (content?.languageId === "scss") {
     if (vf.vfStyleModule?.allVariables) {
       const items: CompletionItem[] =
         vf.vfStyleModule.allVariables.map<CompletionItem>(
@@ -183,7 +145,11 @@ connection.onCompletion((params: CompletionParams): CompletionItem[] => {
                 variable.name.indexOf("color") >= 0
                   ? CompletionItemKind.Color
                   : CompletionItemKind.Variable,
-              detail: `Vanilla ${variable.name} variable`,
+              detail: variable.value,
+              documentation: {
+                kind: MarkupKind.Markdown,
+                value: `Vanilla \`${variable.name}\` variable with default value of \`${variable.value}\``,
+              },
             };
           }
         );
