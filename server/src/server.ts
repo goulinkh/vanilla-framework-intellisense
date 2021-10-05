@@ -90,6 +90,7 @@ connection.onInitialized((params: InitializedParams) => {
 // This handler provides the initial list of the completion items.
 connection.onCompletion((params: CompletionParams): CompletionItem[] => {
   const content = documents.get(params.textDocument.uri);
+
   if (content?.languageId === "html") {
     const parsedContent = parseHtml(content.getText());
     const context = html.findHtmlNodeFromRawText(
@@ -121,7 +122,24 @@ connection.onCompletion((params: CompletionParams): CompletionItem[] => {
       );
     }
   }
-
+  if (content?.languageId === "scss") {
+    if (vf.vfStyleModule?.allVariables) {
+      const items: CompletionItem[] =
+        vf.vfStyleModule.allVariables.map<CompletionItem>(
+          (variable): CompletionItem => {
+            return {
+              label: variable.name,
+              kind:
+                variable.name.indexOf("color") >= 0
+                  ? CompletionItemKind.Color
+                  : CompletionItemKind.Variable,
+              detail: `Vanilla ${variable.name} variable`,
+            };
+          }
+        );
+      return items;
+    }
+  }
   return [];
 });
 
