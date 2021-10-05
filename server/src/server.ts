@@ -120,29 +120,22 @@ connection.onCompletion((params: CompletionParams): CompletionItem[] => {
     content?.languageId === "typescriptreact"
   ) {
     const line = content.getText().split("\n")[params.position.line];
-    const regex = /class(Name)?={?("[a-zA-Z_-]*"(\s)*(\+)?(\s)*)+}?/i
-    const matchInfo = regex.exec(line);
+    const startIndex = line.lastIndexOf("\"", params.position.character - 1)
+    const endIndex = params.position.character;
+    const className = line.slice(startIndex + 1, endIndex)
 
-    if (matchInfo) {
-      const matchStartInd = matchInfo.index;
-      const matchedStr = matchInfo[0];
-      if (matchStartInd <=  params.position.character && params.position.character <= matchStartInd + matchedStr.length) { 
-        const className = matchedStr.split("=")[1].replace(/\"|'|{|}/g,'');
-
-        return html.filterResults(
-          [
-            ...new Set([
-              ...(vf.vfStyleModule?.allRootClassTrees?.flatMap((tree) =>
-                tree.classes
-                  .map((c) => c.name)
-                  .filter((c) => c.match(new RegExp(`.*${className}.*`)))  
-                  .filter((c) => !c.match(/^.+__.+$/))              
-              ) || []),
-            ]),
-          ]
-        );
-      }
-    }
+    return html.filterResults(
+      [
+        ...new Set([
+          ...(vf.vfStyleModule?.allRootClassTrees?.flatMap((tree) =>
+            tree.classes
+              .map((c) => c.name)
+              .filter((c) => c.match(new RegExp(`.*${className}.*`)))  
+              .filter((c) => !c.match(/^.+__.+$/))              
+          ) || []),
+        ]),
+      ]
+    );
   } else if (content?.languageId === "scss") {
     if (vf.vfStyleModule?.allVariables) {
       const items: CompletionItem[] =
