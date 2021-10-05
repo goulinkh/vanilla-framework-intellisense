@@ -95,13 +95,7 @@ type Component = {
 };
 
 const getDocsLink = ({ category, name }: Component) => {
-  const baseComponents = ["heading", "text", "table"];
-  const docsNames: Record<string, string> = {
-    button: "buttons",
-  };
-  const categoryName = baseComponents.includes(name) ? "base" : category;
-  const docsName: string = docsNames[name] || name;
-  const linkBase = `vanillaframework.io/docs/${categoryName}/${docsName}`;
+  const linkBase = `vanillaframework.io/docs/${category}/${name}`;
 
   return `[${linkBase}](https://${linkBase})`;
 };
