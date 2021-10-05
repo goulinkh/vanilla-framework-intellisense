@@ -101,19 +101,15 @@ connection.onCompletion((params: CompletionParams): CompletionItem[] => {
     );
     if (context && vf.isLoaded && html.isInsideClassValueField(context)) {
       const items = html.getAvailableClasses(context.element);
-      return html.filterResults(
-        [
-          ...new Set([
-            ...items.highScoreItems.map((i) => i.name),
-            ...items.normalItems.map((i) => i.name),
-            ...(vf.vfStyleModule?.allRootClassTrees?.flatMap((tree) =>
-              tree.classes
-                .map((c) => c.name)
-                .filter((c) => !c.match(/^.+__.+$/))
-            ) || []),
-          ]),
-        ]
-      );
+      return html.filterResults([
+        ...new Set([
+          ...items.highScoreItems.map((i) => i.name),
+          ...items.normalItems.map((i) => i.name),
+          ...(vf.vfStyleModule?.allRootClassTrees?.flatMap((tree) =>
+            tree.classes.map((c) => c.name).filter((c) => !c.match(/^.+__.+$/))
+          ) || []),
+        ]),
+      ]);
     }
   } else if (
     content?.languageId === "javascriptreact" ||
