@@ -88,42 +88,23 @@ connection.onInitialized((params: InitializedParams) => {
   }
 });
 
-type Component = {
-  category: string;
-  name: string;
-  modifier: string;
-};
+const getComponentDocsLink = (className: string): string => {
+  if (!className) return "";
 
-const getDocsLink = ({ category, name }: Component) => {
+  const category =
+    className.split("-")[0] === "p"
+      ? "patterns"
+      : className.split("-")[0] === "l"
+      ? "layouts"
+      : "utilities";
+  const name = className
+    .slice(className.indexOf("-") + 1)
+    .split("__")[0]
+    .split("--")[0];
+
   const linkBase = `vanillaframework.io/docs/${category}/${name}`;
 
   return `[${linkBase}](https://${linkBase})`;
-};
-
-const generateComponentDocs = (className: string): string => {
-  if (!className) return "";
-
-  const component: Component = {
-    category: className.split("-")[0] === "p" ? "patterns" : "utilities",
-    name: className
-      .slice(className.indexOf("-") + 1)
-      .split("__")[0]
-      .split("--")[0],
-    modifier: className.split("--")[1] || "",
-  };
-  const componentNameCapital = component.name
-    ? (component.name?.charAt(0).toUpperCase() + component.name?.slice(1))
-        .replace(/-/g, " ")
-        .replace(/\s+/g, " ")
-        .trim()
-    : "";
-
-  return [
-    `# ${componentNameCapital}`,
-    component.modifier ? `## ${component.modifier}` : "",
-    `### Documentation`,
-    getDocsLink(component),
-  ].join("\n");
 };
 
 // This handler provides the initial list of the completion items.
@@ -157,18 +138,14 @@ connection.onCompletion((params: CompletionParams): CompletionItem[] => {
           .filter((c) => !c.match(/#{.*}/))
           // example: u-fixed-width &
           .filter((c) => !c.match(/&/))
-          .map((i) => {
-            const markdown = {
+          .map((i) => ({
+            label: i,
+            kind: CompletionItemKind.EnumMember,
+            documentation: {
               kind: MarkupKind.Markdown,
-              value: generateComponentDocs(i),
-            };
-
-            return {
-              label: i,
-              kind: CompletionItemKind.EnumMember,
-              documentation: markdown,
-            };
-          })
+              value: getComponentDocsLink(i),
+            },
+          }))
       );
     }
   } else if (
