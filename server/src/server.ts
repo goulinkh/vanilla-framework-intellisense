@@ -135,7 +135,8 @@ connection.onCompletion((params: CompletionParams): CompletionItem[] => {
               ...(vf.vfStyleModule?.allRootClassTrees?.flatMap((tree) =>
                 tree.classes
                   .map((c) => c.name)
-                  .filter((c) => c.match(new RegExp(`.*${className}.*`)))                
+                  .filter((c) => c.match(new RegExp(`.*${className}.*`)))  
+                  .filter((c) => !c.match(/^.+__.+$/))              
               ) || []),
             ]),
           ]
