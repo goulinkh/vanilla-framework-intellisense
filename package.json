@@ -2,7 +2,7 @@
   "name": "vanilla-framework",
   "displayName": "Vanilla Framework Intellisense",
   "description": "Intelligent Vanilla framework suggestions for VS Code",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "publisher": "goulinkh",
   "license": "MIT",
   "categories": [
