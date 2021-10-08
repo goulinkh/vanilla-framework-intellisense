@@ -3,6 +3,7 @@ import {
   CompletionItem,
   CompletionItemKind,
   MarkupKind,
+  MarkupContent,
 } from "vscode-languageserver-types";
 import { ClassName, ClassTree, VanillaFramework } from "./vanilla-framework";
 
@@ -142,31 +143,42 @@ export class HTMLAutoCompletion {
             ({
               label: i,
               kind: CompletionItemKind.EnumMember,
-              documentation: {
-                kind: MarkupKind.Markdown,
-                value: getComponentDocsLink(i),
-              },
+              documentation: getComponentDocs(i),
             } as CompletionItem)
         )
     );
   }
 }
 
-const getComponentDocsLink = (className: string): string => {
+const getComponentDocs = (
+  className: string
+): string | MarkupContent | undefined => {
   if (!className) return "";
 
+  const isWithCategoryPrefix = className.substring(0, 3).includes("-");
   const category =
-    className.split("-")[0] === "p"
-      ? "patterns"
-      : className.split("-")[0] === "l"
+    className.substring(0, 2) === "l-"
       ? "layouts"
-      : "utilities";
-  const name = className
-    .slice(className.indexOf("-") + 1)
+      : className.substring(0, 2) === "u-"
+      ? "utilities"
+      : className.substring(0, 3) === "is-"
+      ? "modifiers"
+      : "patterns";
+
+  const name = (
+    isWithCategoryPrefix
+      ? className.slice(className.indexOf("-") + 1)
+      : className
+  )
     .split("__")[0]
     .split("--")[0];
 
   const linkBase = `vanillaframework.io/docs/${category}/${name}`;
 
-  return `[${linkBase}](https://${linkBase})`;
+  return category !== "modifiers"
+    ? {
+        kind: MarkupKind.Markdown,
+        value: `[${linkBase}](https://${linkBase})`,
+      }
+    : undefined;
 };
