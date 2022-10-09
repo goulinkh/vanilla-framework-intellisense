@@ -1,4 +1,4 @@
-import axios from "axios";
+import fetch from "node-fetch";
 import { HTMLElement, parse } from "node-html-parser";
 import { commands, window } from "vscode";
 
@@ -9,9 +9,9 @@ type Snippet = {
 
 export const fetchDocExamples: () => Promise<Snippet[]> = async () => {
   try {
-    const res = await axios.get("https://vanillaframework.io/docs/examples");
+    const res = await fetch("https://vanillaframework.io/docs/examples");
 
-    const examplesDoc = parse(res.data);
+    const examplesDoc = parse(await res.text());
 
     const snippets = await Promise.all(
       [
@@ -23,13 +23,13 @@ export const fetchDocExamples: () => Promise<Snippet[]> = async () => {
         ),
       ].map(async (e) => {
         const title = e.rawText;
-        const res = await axios.get(
+        const res = await fetch(
           `https://vanillaframework.io${e.getAttribute("href")}`
         );
 
-        const exampleDoc = parse(res.data);
+        const exampleDoc = parse(await res.text());
         const body = exampleDoc.querySelector("body");
-        if(!body){
+        if (!body) {
           return;
         }
         const bodyChildNodes: HTMLElement[] = body.childNodes
@@ -40,7 +40,7 @@ export const fetchDocExamples: () => Promise<Snippet[]> = async () => {
         return { name: title, html: snippetString.join("\n") };
       })
     );
-    return snippets.filter(e => e);
+    return snippets.filter((e) => e);
   } catch (error) {
     console.log(error);
   }
