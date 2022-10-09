@@ -2,7 +2,7 @@
   "name": "vanilla-framework",
   "displayName": "Vanilla Framework Intellisense",
   "description": "Intelligent Vanilla framework suggestions for VS Code",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "publisher": "goulinkh",
   "license": "MIT",
   "categories": [
@@ -28,7 +28,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/goulinkh/vanilla-framework.git"
+    "url": "https://github.com/goulinkh/vanilla-framework-intellisense.git"
   },
   "main": "./client/out/extension",
   "contributes": {
