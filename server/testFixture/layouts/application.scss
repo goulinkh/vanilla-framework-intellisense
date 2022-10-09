@@ -1,0 +1,15 @@
+@mixin application-layout {
+  $spacing: 5px;
+  // apply the application layout to the root of the website
+  .application {
+    display: flex;
+    gap: $spacing;
+    > div {
+      display: flex;
+      padding: 0;
+      a {
+        text-decoration: none;
+      }
+    }
+  }
+}

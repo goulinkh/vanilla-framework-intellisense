@@ -1,0 +1,116 @@
+{
+  "type": "root",
+  "name": "style",
+  "nodes": [
+    {
+      "type": "variable",
+      "name": "$button-corner-radius",
+      "value": "0px"
+    },
+    {
+      "type": "mixin",
+      "name": "paragraph",
+      "nodes": [
+        {
+          "type": "style-rule",
+          "selector": "p",
+          "value": "p {\n    font-family: sans-serif;\n  "
+        }
+      ],
+      "included": true
+    },
+    {
+      "type": "mixin",
+      "name": "button",
+      "nodes": [
+        {
+          "type": "style-rule",
+          "selector": ":root",
+          "value": ":root {\n    font-size: 16px;\n  ",
+          "comment": "The body element"
+        },
+        {
+          "type": "style-rule",
+          "selector": ".btn",
+          "value": ".btn {\n    border-radius: $button-corner-radius;\n    cursor: pointer;\n    // Apply additional styling to the button: e.g. class=\"btn success\" ..\n    &.success {\n      color: green;\n    }\n    > .icon {\n      margin-left: 3px;\n    }\n  ",
+          "comment": "Utility based button styling\n example of usage:\n ```html\n <div class=\"btn\">Click here</div>\n ```"
+        },
+        {
+          "type": "style-rule",
+          "selector": ".btn.success",
+          "value": "&.success {\n      color: green;\n    ",
+          "comment": "Apply additional styling to the button: e.g. class=\"btn success\" .."
+        },
+        {
+          "type": "style-rule",
+          "selector": ".btn > .icon",
+          "value": "> .icon {\n      margin-left: 3px;\n    "
+        }
+      ],
+      "included": true
+    },
+    {
+      "type": "mixin",
+      "name": "card",
+      "nodes": [
+        {
+          "type": "style-rule",
+          "selector": ":root",
+          "value": ":root {\n    font-size: 16px;\n  ",
+          "comment": "The body element"
+        },
+        {
+          "type": "style-rule",
+          "selector": ".card",
+          "value": ".card {\n    display: flex;\n  "
+        }
+      ],
+      "included": true
+    },
+    {
+      "type": "mixin",
+      "name": "application-layout",
+      "nodes": [
+        {
+          "type": "variable",
+          "name": "$spacing",
+          "value": "5px"
+        },
+        {
+          "type": "style-rule",
+          "selector": ".application",
+          "value": ".application {\n    display: flex;\n    gap: $spacing;\n    > div {\n      display: flex;\n      padding: 0;\n      a {\n        text-decoration: none;\n      }\n    }\n  ",
+          "comment": "apply the application layout to the root of the website"
+        },
+        {
+          "type": "style-rule",
+          "selector": ".application > div",
+          "value": "> div {\n      display: flex;\n      padding: 0;\n      a {\n        text-decoration: none;\n      }\n    "
+        },
+        {
+          "type": "style-rule",
+          "selector": ".application > div a",
+          "value": "a {\n        text-decoration: none;\n      "
+        }
+      ],
+      "included": true
+    },
+    {
+      "type": "mixin",
+      "name": "extra-styles",
+      "nodes": [
+        {
+          "type": "style-rule",
+          "selector": "span.badge",
+          "value": "span.badge {\n    background-color: orange;\n  "
+        }
+      ],
+      "included": false
+    },
+    {
+      "type": "style-rule",
+      "selector": "h1",
+      "value": "h1 {\n  font-size: 20px;\n"
+    }
+  ]
+}

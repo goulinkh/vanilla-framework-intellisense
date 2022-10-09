@@ -1,0 +1,9 @@
+@import "basic";
+
+@mixin card {
+  @include basic;
+
+  .card {
+    display: flex;
+  }
+}

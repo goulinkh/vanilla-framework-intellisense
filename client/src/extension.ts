@@ -43,6 +43,7 @@ export async function activate(context: ExtensionContext) {
       { scheme: "file", language: "scss" },
       { scheme: "file", language: "javascriptreact" },
       { scheme: "file", language: "typescriptreact" },
+      { scheme: "file", language: "django-html" },
     ],
     synchronize: {
       // Notify the server about file changes to '.clientrc files contained in the workspace

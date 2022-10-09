@@ -1,0 +1,6 @@
+{
+  "testEnvironment": "node",
+  "roots": ["out"],
+  "transform": {},
+  "transformIgnorePatterns": ["<rootDir>/node_modules/"]
+}

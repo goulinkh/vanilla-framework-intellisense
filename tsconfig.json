@@ -1,22 +1,14 @@
 {
-	"compilerOptions": {
-		"module": "commonjs",
-		"target": "es2019",
-		"lib": ["ES2019"],
-		"outDir": "out",
-		"rootDir": "src",
-		"sourceMap": true,
-		"esModuleInterop": true
-	},
-	"include": [
-		"src"
-	],
-	"exclude": [
-		"node_modules",
-		".vscode-test"
-	],
-	"references": [
-		{ "path": "./client" },
-		{ "path": "./server" }
-	]
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es2020",
+    "lib": ["ES2020"],
+    "outDir": "out",
+    "rootDir": "src",
+    "sourceMap": true,
+    "esModuleInterop": true
+  },
+  "include": ["src"],
+  "exclude": ["node_modules", ".vscode-test"],
+  "references": [{ "path": "./client" }, { "path": "./server" }]
 }

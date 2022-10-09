@@ -1,0 +1,29 @@
+@import "basic";
+
+$button-corner-radius: 10px;
+
+@mixin button {
+  @include primary-button;
+}
+
+@mixin primary-button {
+  @include basic;
+  /*
+	* Utility based button styling
+	* example of usage:
+	* ```html
+	* <div class="btn">Click here</div>
+	* ```
+	*/
+  .btn {
+    border-radius: $button-corner-radius;
+    cursor: pointer;
+    // Apply additional styling to the button: e.g. class="btn success" ..
+    &.success {
+      color: green;
+    }
+    > .icon {
+      margin-left: 3px;
+    }
+  }
+}

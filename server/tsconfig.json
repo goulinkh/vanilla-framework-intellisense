@@ -1,14 +1,18 @@
 {
-	"compilerOptions": {
-		"target": "es2019",
-		"lib": ["ES2019"],
-		"module": "commonjs",
-		"moduleResolution": "node",
-		"sourceMap": true,
-		"strict": true,
-		"outDir": "out",
-		"rootDir": "src"
-	},
-	"include": ["src"],
-	"exclude": ["node_modules", ".vscode-test"]
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "module": "ES2022",
+    "moduleResolution": "Node",
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "sourceMap": true,
+    "strict": true,
+    "outDir": "out",
+    "rootDir": "src",
+    "allowSyntheticDefaultImports": true,
+    "incremental": true
+  },
+  "include": ["src"],
+  "exclude": ["node_modules", ".vscode-test"]
 }

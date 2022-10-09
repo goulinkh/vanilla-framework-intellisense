@@ -1,0 +1,9 @@
+/**
+* This is the basic component
+*/
+@mixin basic {
+  // The body element
+  :root {
+    font-size: 16px;
+  }
+}

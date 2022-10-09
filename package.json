@@ -2,7 +2,7 @@
   "name": "vanilla-framework",
   "displayName": "Vanilla Framework Intellisense",
   "description": "Intelligent Vanilla framework suggestions for VS Code",
-  "version": "0.1.2",
+  "version": "1.0.0",
   "publisher": "goulinkh",
   "license": "MIT",
   "categories": [
@@ -23,7 +23,8 @@
     "onLanguage:html",
     "onLanguage:scss",
     "onLanguage:javascriptreact",
-    "onLanguage:typescriptreact"
+    "onLanguage:typescriptreact",
+    "onLanguage:django-html"
   ],
   "repository": {
     "type": "git",
@@ -53,7 +54,7 @@
         "command": "vanilla-framework-intellisense.vf-snippets",
         "title": "insert a snippet",
         "category": "Vanilla Framework",
-        "enablement": "resourceLangId == html"
+        "enablement": "resourceLangId == html || resourceLangId == javascriptreact || resourceLangId == typescriptreact || resourceLangId == django-html"
       }
     ]
   },
@@ -63,15 +64,16 @@
     "watch": "tsc -b -w",
     "lint": "eslint ./client/src ./server/src --ext .ts,.tsx",
     "postinstall": "cd client && yarn install && cd ../server && yarn install && cd ..",
+    "clean": "rm -rf node_modules && cd client && rm -rf node_modules out&& cd ../server &&rm -rf node_modules out && cd ..",
     "test": "sh ./scripts/e2e.sh"
   },
   "devDependencies": {
-    "@types/mocha": "^8.2.2",
-    "@types/node": "^12.12.0",
-    "@typescript-eslint/eslint-plugin": "^4.23.0",
-    "@typescript-eslint/parser": "^4.23.0",
-    "eslint": "^7.26.0",
-    "mocha": "^8.3.2",
-    "typescript": "^4.3.5"
+    "@types/mocha": "^9.1.1",
+    "@types/node": "^18.7.16",
+    "@typescript-eslint/eslint-plugin": "^5.36.2",
+    "@typescript-eslint/parser": "^5.36.2",
+    "eslint": "^8.23.0",
+    "mocha": "^10.0.0",
+    "typescript": "^4.8.3"
   }
 }

@@ -2,7 +2,6 @@
  * Copyright (c) Microsoft Corporation. All rights reserved.
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
-import { parse as parseHtml } from "node-html-parser";
 import { join } from "path";
 import { TextDocument } from "vscode-languageserver-textdocument";
 import {
@@ -18,9 +17,14 @@ import {
   ProposedFeatures,
   TextDocuments,
   TextDocumentSyncKind,
-} from "vscode-languageserver/node";
-import { HTMLAutoCompletion } from "./html";
-import { VanillaFramework } from "./vanilla-framework";
+} from "vscode-languageserver/node.js";
+import { findHtmlNodeFromRawText, getAvailableClassUtilities } from "./html.js";
+import {
+  loadVanillaFrameworkPackage,
+  Root as VanillaLib,
+} from "./scss-parser.js";
+import { extractVanillaVariables } from "./scss.js";
+
 // Create a connection for the server, using Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
 const connection = createConnection(ProposedFeatures.all);
@@ -28,12 +32,10 @@ const connection = createConnection(ProposedFeatures.all);
 // Create a simple text document manager.
 const documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
 documents.listen(connection);
-const vf = new VanillaFramework();
-const html = new HTMLAutoCompletion(vf);
 let workspacePath: string | undefined;
 let hasConfigurationCapability = false;
 let hasWorkspaceFolderCapability = false;
-
+let vanillaLib: VanillaLib;
 connection.onInitialize(async (params: InitializeParams) => {
   const capabilities = params.capabilities;
 
@@ -42,8 +44,7 @@ connection.onInitialize(async (params: InitializeParams) => {
   )[0];
 
   // Search for the package in the workspace
-  await vf.loadPackage(workspacePath);
-
+  vanillaLib = await loadVanillaFrameworkPackage(workspacePath);
   // Does the client support the `workspace/configuration` request?
   // If not, we fall back using global settings.
   hasConfigurationCapability = !!(
@@ -91,70 +92,31 @@ connection.onInitialized((params: InitializedParams) => {
 // This handler provides the initial list of the completion items.
 connection.onCompletion((params: CompletionParams): CompletionItem[] => {
   const content = documents.get(params.textDocument.uri);
+  const languageId = content?.languageId;
+  if (!content || !languageId) return [];
+  const text = content.getText();
+  const characterPosition =
+    text.split("\n").slice(0, params.position.line).join("\n").length +
+    params.position.character;
+  const textUntilCursor = text.slice(0, characterPosition + 1);
+  const canComplete = /(class|className)\s*=\s*("|')(?:(?!\2).)*$/is;
+  if (languageId !== "scss" && !canComplete.exec(textUntilCursor)) return [];
 
-  if (content?.languageId === "html") {
-    const parsedContent = parseHtml(content.getText());
-    const context = html.findHtmlNodeFromRawText(
-      params,
-      content.getText(),
-      parsedContent
-    );
-    if (context && vf.isLoaded && html.isInsideClassValueField(context)) {
-      const items = html.getAvailableClasses(context.element);
-      return html.filterResults([
-        ...new Set([
-          ...items.highScoreItems.map((i) => i.name),
-          ...items.normalItems.map((i) => i.name),
-          ...(vf.vfStyleModule?.allRootClassTrees?.flatMap((tree) =>
-            tree.classes.map((c) => c.name).filter((c) => !c.match(/^.+__.+$/))
-          ) || []),
-        ]),
-      ]);
-    }
+  if (languageId === "html") {
+    const element = findHtmlNodeFromRawText(params, text);
+    if (!element) return [];
+
+    const items = getAvailableClassUtilities(vanillaLib, element);
+    return items;
   } else if (
-    content?.languageId === "javascriptreact" ||
-    content?.languageId === "typescriptreact"
+    languageId === "javascriptreact" ||
+    languageId === "typescriptreact" ||
+    languageId === "django-html"
   ) {
-    const characterPosition =
-      content.getText().split("\n").slice(0, params.position.line).join("\n")
-        .length + params.position.character;
-    const str = content
-      .getText()
-      .slice(characterPosition - 500, characterPosition + 1);
-    if (
-      str.match(
-        /(?:\s|:|\()(?:class(?:Name)?|\[ngClass\])\s*=\s*['"`][^'"`]*$/i
-      ) ||
-      str.match(/className\s*=\s*{[^}]*$/i)
-    )
-      return html.filterResults([
-        ...new Set([
-          ...(vf.vfStyleModule?.allClassTrees?.flatMap((tree) =>
-            tree.classes.map((c) => c.name)
-          ) || []),
-        ]),
-      ]);
-  } else if (content?.languageId === "scss") {
-    if (vf.vfStyleModule?.allVariables) {
-      const items: CompletionItem[] =
-        vf.vfStyleModule.allVariables.map<CompletionItem>(
-          (variable): CompletionItem => {
-            return {
-              label: variable.name,
-              kind:
-                variable.name.indexOf("color") >= 0
-                  ? CompletionItemKind.Color
-                  : CompletionItemKind.Variable,
-              detail: variable.value,
-              documentation: {
-                kind: MarkupKind.Markdown,
-                value: `Vanilla \`${variable.name}\` variable with default value of \`${variable.value}\``,
-              },
-            };
-          }
-        );
-      return items;
-    }
+    const items = getAvailableClassUtilities(vanillaLib);
+    return items;
+  } else if (languageId === "scss") {
+    return extractVanillaVariables(vanillaLib);
   }
   return [];
 });
